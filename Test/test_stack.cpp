@@ -19,7 +19,7 @@ TEST(TStack, can_create_copied_stack)
 TEST(TStack, copied_stack_is_equal_to_source_one)
 {
 	TStack<int> m1(5);
-	TStack<int> m2(5);
+	TStack<int> m2(m1);
 	ASSERT_EQ(m1==m2,true);
 }
 
@@ -49,10 +49,27 @@ TEST(TStack, cant_push_element_to_full_stack)
 	ASSERT_ANY_THROW(m.Push(1));
 }
 
-
-
 TEST(TStack, cant_pop_element_from_empty_stack)
 {
 	TStack<int> m(5);
 	ASSERT_ANY_THROW(m.Pop());
+}
+
+
+TEST(TStack, equal_stacks_are_equal)
+{
+	TStack<int> m1(5);
+	TStack<int> m2(5);
+	m1.Push(5);
+	m2.Push(5);
+	ASSERT_EQ(m1 == m2, true);
+}
+
+TEST(TStack, unequal_stacks_arent_equal)
+{
+	TStack<int> m1(5);
+	TStack<int> m2(5);
+	m1.Push(5);
+	m2.Push(6);
+	ASSERT_EQ(m1 != m2, true);
 }

@@ -4,9 +4,9 @@
 
 using namespace std;
 
-string TCalculator::CheckExpression()
+bool TCalculator::CheckExpression()
 {
-	TStack<char> ch;
+	TStack<char> ch(expr.size());
 	for (int i = 0; i < expr.size(); i++)
 	{
 		if (expr[i] == '(')
@@ -20,9 +20,9 @@ string TCalculator::CheckExpression()
 		}
 	}
 	if (ch.IsEmpty())
-		return "Верно";
+		return true;
 	else
-		return "Неверно";
+		return false;
 }
 
 int TCalculator::Priority(const char& op)
@@ -96,19 +96,24 @@ void TCalculator::ToPostfix()
 		}
 		else
 		{
-			string func = "";
-			while (infix[i] != '(')
+			if (infix[i] == 's' || infix[i] == 'c' || infix[i] == 't')
 			{
-				func += infix[i];
-				i++;
+				string func = "";
+				while (infix[i] != '(')
+				{
+					func += infix[i];
+					i++;
+				}
+				if (isFunction(func))
+				{
+					if (func == "sin")
+						st_char.Push('s');
+					else if (func == "cos")
+						st_char.Push('c');
+					else st_char.Push('t');
+				}
 			}
-			if (isFunction(func))
-			{
-				size_t ind;
-				double num = stod(&infix[i+1], &ind);
-				postfix +=  to_string(num) + ' ' + func + ' ';
-				i += ind + 1;
-			}
+			else throw("Неправильное выражение");
 		}
 		
 	}
@@ -125,7 +130,6 @@ double TCalculator::Calc()
 		{
 			size_t ind;
 			double num = stod(&infix[i], &ind);
-			//postfix += to_string(num) + ' ';
 			st_double.Push(num);
 			i += ind - 1;
 		}
@@ -139,28 +143,7 @@ double TCalculator::Calc()
 		{
 			while (st_char.Top() != '(')
 			{
-				double a = st_double.Pop();
-				double b = st_double.Pop();
-				switch (st_char.Pop())
-				{
-				case '+':
-					st_double.Push(a + b);
-					break;
-				case '-':
-					st_double.Push(b - a);
-					break;
-				case '*':
-					st_double.Push(a * b);
-					break;
-				case '/':
-					st_double.Push(b / a);
-					break;
-				case '^':
-					st_double.Push(pow(b, a));
-					break;
-				default:
-					break;
-				}
+				i += OperationResult(st_char.Pop());
 			}
 			st_char.Pop();
 		}
@@ -169,68 +152,36 @@ double TCalculator::Calc()
 		{
 			while (Priority(st_char.Top()) >= Priority(infix[i]))
 			{
-				double a = st_double.Pop();
-				double b = st_double.Pop();
-				switch (st_char.Pop())
-				{
-				case '+':
-					st_double.Push(a + b);
-					break;
-				case '-':
-					st_double.Push(b - a);
-					break;
-				case '*':
-					st_double.Push(a * b);
-					break;
-				case '/':
-					st_double.Push(b / a);
-					break;
-				case '^':
-					st_double.Push(pow(b, a));
-					break;
-				default:
-					break;
-				}
+				OperationResult(st_char.Pop());
 			}
 			st_char.Push(infix[i]);
 		}
 		else
 		{
-			string func = "";
-			while (infix[i] != '(')
+			if (infix[i] == 's' || infix[i] == 'c' || infix[i] == 't')
 			{
-				func += infix[i];
-				i++;
+				string func = "";
+				while (infix[i] != '(')
+				{
+					func += infix[i];
+					i++;
+				}
+				if (isFunction(func))
+				{
+					if (func == "sin")
+						st_char.Push('s');
+					else if (func == "cos")
+						st_char.Push('c');
+					else st_char.Push('t');
+				}
 			}
-			if (isFunction(func))
-			{
-				if (func == "sin")
-					st_char.Push('s');
-				else if (func == "cos")
-					st_char.Push('c');
-				else st_char.Push('t');
-			}
+			else throw("Неправильное выражение");
 			size_t ind;
 			
 			st_double.Push(stod(&infix[i + 1], &ind));
-			i += ind + 1;
-			switch (st_char.Pop())
-			{
-			case 's':
-				st_double.Push(sin(st_double.Pop()));
-				break;
-			case 'c':
-				st_double.Push(cos(st_double.Pop()));
-				break;
-			case 't':
-				st_double.Push(tan(st_double.Pop()));
-				break;
-			default:
-				break;
-			}
-			i += 2;
+			i += ind+1;
+			OperationResult(st_char.Pop());
 		}
-
 	}
 	return(st_double.Top());
 }
@@ -239,58 +190,72 @@ double TCalculator::CalcPostfix()
 {
 	for (int i = 0; i < postfix.size(); i++)
 	{
+		if (postfix[i] == ' ')
+			continue;
 		if (postfix[i] <= '9' && postfix[i] >= '1')
-			st_double.Push(stod(&postfix[i]));
+		{
+			size_t ind;
+			double num = stod(&postfix[i], &ind);
+			st_double.Push(num);
+			i += ind;
+		}
 		else
-			if (isOperator(postfix[i]))
-			{
-				double a = st_double.Pop();
-				double b = st_double.Pop();
-				switch (postfix[i])
-				{
-				case '+':
-					st_double.Push(a + b);
-					break;
-				case '-':
-					st_double.Push(b - a);
-					break;
-				case '*':
-					st_double.Push(a * b);
-					break;
-				case '/':
-					st_double.Push(b / a);
-					break;
-				case '^':
-					st_double.Push(pow(b, a));
-					break;
-				default:
-					break;
-				}
-			}
-			else if(postfix[i]!=' ')
-			{
-				double a = 0;
-				switch (postfix[i])
-				{
-					
-				case 's':
-					a = st_double.Pop();
-					st_double.Push(sin(a));
-					break;
-				case 'c':
-					a = st_double.Pop();
-					st_double.Push(cos(a));
-					break;
-				case 't':
-					a = st_double.Pop();
-					st_double.Push(tan(a));
-					break;
-				default:
-					break;
-				}
-
-			}
+			i+=OperationResult(postfix[i]);
 
 	}
 	return(st_double.Top());
+}
+
+int TCalculator::OperationResult(const char op)
+{
+	if (isOperator(op))
+	{
+		double a = st_double.Pop();
+		double b = st_double.Pop();
+		switch (op)
+		{
+		case '+':
+			st_double.Push(a + b);
+			break;
+		case '-':
+			st_double.Push(b - a);
+			break;
+		case '*':
+			st_double.Push(a * b);
+			break;
+		case '/':
+			st_double.Push(b / a);
+			break;
+		case '^':
+			st_double.Push(pow(b, a));
+			break;
+		default:
+			break;
+		}
+		return 0;
+	}
+	else if (op != ' ')
+	{
+		double a = 0;
+		switch (op)
+		{
+		case 's':
+			a = st_double.Pop();
+			st_double.Push(sin(a));
+			return(3);
+			break;
+		case 'c':
+			a = st_double.Pop();
+			st_double.Push(cos(a));
+			return(3);
+			break;
+		case 't':
+			a = st_double.Pop();
+			st_double.Push(tan(a));
+			return(2);
+			break;
+		default:
+			break;
+		}
+	}
 }

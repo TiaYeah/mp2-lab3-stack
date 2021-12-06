@@ -16,25 +16,21 @@ void main()
 	
 	TCalculator calc;
 	string expr;
-	cin >> expr;
+	cin >> expr; //sin(6)/2+3^2*cos(2)-tg(3)
 	calc.SetExpr(expr);
-	cout << calc.CheckExpression() << endl;
-	//calc.ToPostfix();
-	cout << calc.Calc();
-	//cout << calc.CalcPostfix();
-	//TStack<int> st(2), st2;
-	//st.Push(5);
-	//st.Push(2);
-	//st2.Push(5);
-	//cout << (st != st2) << endl;
-	//cout << (st == st2) << endl;
-	//for (int i = 0; i <= st.GetNumLast(); i++)
-	//{
-	//	st.Pop();
-	//}
-	//cout << (st == st2)<<endl;
-	//// 2)
-	//	SetExpression
-//	GetExpression
-//	CheckExpression
+	//cout << calc.GetPostfix() << endl;
+	if (calc.CheckExpression())
+	{
+		try
+		{
+			cout << "Ответ: " << calc.Calc() << endl;
+		}
+		catch (...)
+		{
+			cout << "Неправильное выражение" << endl;
+		}
+	}
+	else
+		cout << "Неправильное выражение";
+	
 }
